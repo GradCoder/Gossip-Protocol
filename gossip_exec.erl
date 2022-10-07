@@ -4,7 +4,7 @@
 gossip_2d(Nodes) ->
    io:fwrite("2D Nodes:: ~p \n",[Nodes]).
  
-gossip_line(Nodes,_) when Nodes == -1 -> ok;
+gossip_line(Nodes,Max_count_nodes) when Nodes == -1 ->  start_gossip(Max_count_nodes,10,0);
 
 gossip_line(Nodes,Max_count_nodes) ->
         case Nodes of
@@ -32,3 +32,11 @@ pushsum_full(Nodes) ->
 
 pushsum_imp2d(Nodes) ->
    io:fwrite("2D Nodes:: ~p \n",[Nodes]).
+
+start_gossip(_,Trigger_node_count,Nodes_started) when Nodes_started == Trigger_node_count -> exit(normal);
+
+start_gossip(Num_of_nodes,Trigger_node_count,Nodes_started) ->
+      RandomNodeId = rand:uniform(Num_of_nodes),
+      NodePid = whereis(list_to_atom([RandomNodeId])),
+      NodePid ! {rumor,"Rumor"},
+      start_gossip(Num_of_nodes,Trigger_node_count,Nodes_started+1).
