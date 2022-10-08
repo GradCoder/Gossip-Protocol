@@ -24,13 +24,14 @@ node_pr(Count,Rumor,Gossip_Pid,Node_id) ->
      end.
 
 
-%   io:format("~p ~p ~p",[Count,Rumor,Gossip_Pid]).
+
 
 start_gossiping(Node_id,Max_count_nodes,List_of_neighbours,Rumor) -> 
-     %Index = rand:uniform(Max_count_nodes),
-     %Neighbour_Id =  lists:nth(Index,List_of_neighbours),
      Neighbour_Id = lists:nth(rand:uniform(length(List_of_neighbours)), List_of_neighbours),
-     %io:format(" adding words ~p ~p \n",[Neighbour_Id,Neighbour_Id]),
-     NodePid = whereis(list_to_atom([Neighbour_Id])),
-     NodePid ! {transmittingrumour,Rumor},
+    Id = whereis(list_to_atom([Neighbour_Id])),
+     _ = try Id ! {transmittingrumour,Rumor}  of
+           _ ->  Id
+     catch 
+          _ErrType:_Err -> errormessage
+     end,
      start_gossiping(Node_id-1,Max_count_nodes,List_of_neighbours,Rumor).
