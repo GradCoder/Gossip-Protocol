@@ -29,7 +29,7 @@ gossip_line(Nodes,Max_count_nodes) when Nodes == 0 ->  start_gossip(Max_count_no
 
 gossip_line(Nodes,Max_count_nodes) ->
         case Nodes of
-           0 -> List_of_neighbours = [Nodes+1];
+           1 -> List_of_neighbours = [Nodes+1];
            Max_count_nodes -> List_of_neighbours = [Nodes-1];
            _ -> List_of_neighbours = [Nodes-1,Nodes+1]
         end,

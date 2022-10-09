@@ -1,5 +1,5 @@
 -module(actor_creation).
--export([start/3,init/3,start_gossiping/4]).
+-export([start/3,init/3,start_gossiping/3]).
 
 start(Node_id,Max_count_nodes,List_of_neighbours) ->
      Pid = spawn_link(?MODULE,init,[Node_id,Max_count_nodes,List_of_neighbours]),
@@ -7,7 +7,7 @@ start(Node_id,Max_count_nodes,List_of_neighbours) ->
 
 init(NodeId,Max_count_nodes,List_of_neighbours) ->
       receive 
-          {rumor,Rumor} -> Gossip_Pid = spawn(?MODULE,start_gossiping,[NodeId,Max_count_nodes,List_of_neighbours,Rumor]),
+          {rumor,Rumor} -> Gossip_Pid = spawn(?MODULE,start_gossiping,[Max_count_nodes,List_of_neighbours,Rumor]),
                        io:format("Node name ~p and process ~p",[NodeId,Gossip_Pid]),
                        node_pr(1,Rumor,Gossip_Pid,NodeId)
       end.
@@ -26,7 +26,7 @@ node_pr(Count,Rumor,Gossip_Pid,Node_id) ->
 
 
 
-start_gossiping(Node_id,Max_count_nodes,List_of_neighbours,Rumor) -> 
+start_gossiping(Max_count_nodes,List_of_neighbours,Rumor) -> 
      Neighbour_Id = lists:nth(rand:uniform(length(List_of_neighbours)), List_of_neighbours),
     Id = whereis(list_to_atom([Neighbour_Id])),
      _ = try Id ! {transmittingrumour,Rumor}  of
@@ -34,4 +34,4 @@ start_gossiping(Node_id,Max_count_nodes,List_of_neighbours,Rumor) ->
      catch 
           _ErrType:_Err -> errormessage
      end,
-     start_gossiping(Node_id-1,Max_count_nodes,List_of_neighbours,Rumor).
+     start_gossiping(Max_count_nodes,List_of_neighbours,Rumor).
