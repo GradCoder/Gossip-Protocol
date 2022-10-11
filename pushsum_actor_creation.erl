@@ -10,9 +10,6 @@ init(NodeId,Max_count_nodes,List_of_neighbours) ->
       receive 
           {rumor,Sum,Weight} ->   
                        Pushsum_Pid = spawn(?MODULE,start_pushsum,[NodeId,Max_count_nodes,List_of_neighbours]),
-                       %   Nodename = concat(integer_to_list(NodeId),"P"),
-                       % register(list_to_atom(Nodename),Pushsum_Pid),
-                       %register(list_to_atom(integer_to_list(NodeId)),Pushsum_Pid),
                        node_process(0,Sum+NodeId,Weight+1,NodeId,Pushsum_Pid,NodeId)
       end.
 
@@ -28,14 +25,15 @@ node_process(Count,Sum,Weight,Old_ratio,Pushsum_Pid,Node_id) ->
      if 
         Updated_count > 3 -> 
             io:format("Node ~p converged!!!! \n",[Node_id]),
+            {EndTime,_} = statistics(wall_clock),
+            io:format("Time  ~w  \n", [EndTime]),
             exit(Pushsum_Pid,normal);
         true -> 
             Update_sum = Sum/2,
             Update_weight = Weight/2,
             Pushsum_Pid ! {updaterumor,Update_sum,Update_weight},
             receive  
-            {trans,Rec_sum,Rec_weight} -> 
-               io:fwrite("Rumor received with Sum:~p and Weight:~p",[Rec_sum,Rec_weight]),
+            {transmittingrumour,Rec_sum,Rec_weight} -> 
                New_sum = Update_sum+Rec_sum,
                New_weight = Update_weight + Rec_weight,
                node_process(Updated_count,New_sum,New_weight,New_ratio,Pushsum_Pid,Node_id)
@@ -54,7 +52,6 @@ start_pushsum(Node_id,Max_count_nodes,List_of_neighbours) ->
     _ = try Id ! {transmittingrumour,Rec_sum,Rec_weight}  of
       _ ->  Id
     catch 
-       _ErrType:_Err -> 
-          start_pushsum(Node_id,Max_count_nodes,List_of_neighbours)
+       _ErrType:_Err -> errormessage
     end,
     start_pushsum(Node_id,Max_count_nodes,List_of_neighbours).
